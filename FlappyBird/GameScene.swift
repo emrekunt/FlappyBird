@@ -27,7 +27,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
    
     
     
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         
         self.physicsWorld.contactDelegate = self
         self.physicsWorld.gravity = CGVectorMake(0, -5)
@@ -47,14 +47,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
 
         let birdTexture     = SKTexture(imageNamed: "img/flappy1.png")
         let birdTexture2    = SKTexture(imageNamed: "img/flappy2.png")
-        let animation       = SKAction.animateWithTextures([birdTexture, birdTexture2], timePerFrame: 0.1)
-        let makeBirdFlap    = SKAction.repeatActionForever(animation)
+        let animation       = SKAction.animate(with: [birdTexture, birdTexture2], timePerFrame: 0.1)
+        let makeBirdFlap    = SKAction.repeatForever(animation)
         
         bird    = SKSpriteNode(texture: birdTexture)
-        bird.position   = CGPoint(x: CGRectGetMidX(self.frame), y: CGRectGetMidY(self.frame))
-        bird.runAction(makeBirdFlap)
+        bird.position   = CGPoint(x: CGRectGetMidX(self.frame), y: self.frame.midY)
+        bird.run(makeBirdFlap)
         bird.physicsBody = SKPhysicsBody(circleOfRadius: bird.size.height/2)
-        bird.physicsBody?.dynamic = true;
+        bird.physicsBody?.isDynamic = true;
         bird.physicsBody?.allowsRotation = false;
         bird.physicsBody?.categoryBitMask = birdGroup
         bird.physicsBody?.collisionBitMask = gapGroup
@@ -66,11 +66,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         let ground = SKNode()
         ground.position = CGPoint(x: 0, y: 0)
         ground.physicsBody = SKPhysicsBody(rectangleOfSize:CGSizeMake(self.size.width, 1))
-        ground.physicsBody?.dynamic = false;
+        ground.physicsBody?.isDynamic = false;
         ground.physicsBody?.categoryBitMask = objectGroup
         self.addChild(ground)
     
-        let timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(GameScene.animatePipes), userInfo: nil, repeats: true)
+        let timer = Timer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(GameScene.animatePipes), userInfo: nil, repeats: true)
         
         
         
@@ -103,34 +103,34 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
         let movementAmount = arc4random() % UInt32(self.frame.size.height / 2)
         let pipeOffSet = CGFloat(movementAmount) - self.frame.size.height / 4
         
-        let movePipes = SKAction.moveByX(-self.frame.size.width * 2, y: 0, duration: NSTimeInterval(self.frame.size.width / 100))
+        let movePipes = SKAction.moveBy(x: -self.frame.size.width * 2, y: 0, duration: CFTimeInterval(self.frame.size.width / 100))
         let removePipes = SKAction.removeFromParent()
         let moveAndRemovePipes = SKAction.sequence([movePipes, removePipes])
         
         let pipe1Texture = SKTexture(imageNamed: "img/pipe1.png")
         let pipe1       = SKSpriteNode(texture: pipe1Texture)
-        pipe1.position  = CGPoint(x: CGRectGetMidX(self.frame) + self.frame.size.width, y: CGRectGetMidY(self.frame) + pipe1.size.height / 2 + gapHeight / 2 + pipeOffSet)
+        pipe1.position  = CGPoint(x: self.frame.midX + self.frame.size.width, y: CGRectGetMidY(self.frame) + pipe1.size.height / 2 + gapHeight / 2 + pipeOffSet)
         pipe1.zPosition = 1
-        pipe1.runAction(moveAndRemovePipes)
-        pipe1.physicsBody = SKPhysicsBody(rectangleOfSize: pipe1.size)
-        pipe1.physicsBody?.dynamic = false
+        pipe1.run(moveAndRemovePipes)
+        pipe1.physicsBody = SKPhysicsBody(rectangleOf: pipe1.size)
+        pipe1.physicsBody?.isDynamic = false
         pipe1.physicsBody?.categoryBitMask = objectGroup
         movingObjects.addChild(pipe1)
         
         let pipe2Texture = SKTexture(imageNamed: "img/pipe2.png")
         let pipe2       = SKSpriteNode(texture: pipe2Texture)
-        pipe2.position  = CGPoint(x: CGRectGetMidX(self.frame) + self.frame.size.width, y: CGRectGetMidY(self.frame) - pipe2.size.height / 2 - gapHeight / 2 + pipeOffSet)
+        pipe2.position  = CGPoint(x: self.frame.midX + self.frame.size.width, y: CGRectGetMidY(self.frame) - pipe2.size.height / 2 - gapHeight / 2 + pipeOffSet)
         pipe2.zPosition = 1
-        pipe2.runAction(moveAndRemovePipes)
-        pipe2.physicsBody = SKPhysicsBody(rectangleOfSize: pipe2.size)
-        pipe2.physicsBody?.dynamic = false
+        pipe2.run(moveAndRemovePipes)
+        pipe2.physicsBody = SKPhysicsBody(rectangleOf: pipe2.size)
+        pipe2.physicsBody?.isDynamic = false
         pipe2.physicsBody?.categoryBitMask = objectGroup
         movingObjects.addChild(pipe2)
             let gap = SKNode()
-            gap.position = CGPoint(x: CGRectGetMidX(self.frame) + self.frame.size.width, y: CGRectGetMidY(self.frame) + pipeOffSet)
+            gap.position = CGPoint(x: CGRectGetMidX(self.frame) + self.frame.size.width, y: self.frame.midY + pipeOffSet)
             gap.physicsBody = SKPhysicsBody(rectangleOfSize: CGSizeMake(pipe1.size.width, gapHeight))
-            gap.runAction(moveAndRemovePipes)
-            gap.physicsBody?.dynamic = false
+            gap.run(moveAndRemovePipes)
+            gap.physicsBody?.isDynamic = false
             gap.physicsBody?.collisionBitMask = gapGroup
             gap.physicsBody?.categoryBitMask  = gapGroup
             gap.physicsBody?.contactTestBitMask = birdGroup
@@ -140,7 +140,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
      
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if gameOver == 0{
             bird.physicsBody?.velocity = CGVectorMake(0,0)
             bird.physicsBody?.applyImpulse(CGVectorMake(0, 50))
@@ -149,7 +149,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
             scoreLabel.text = "0"
             movingObjects.removeAllChildren()
             addBg()
-            bird.position   = CGPoint(x: CGRectGetMidX(self.frame), y: CGRectGetMidY(self.frame))
+            bird.position   = CGPoint(x: CGRectGetMidX(self.frame), y: self.frame.midY)
             bird.physicsBody?.velocity = CGVectorMake(0,0)
             
             labelHolder.removeAllChildren()
@@ -164,23 +164,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate{
     
     func addBg(){
         let bgTexture       = SKTexture(imageNamed: "img/bg.png")
-        let moveBg = SKAction.moveByX(-bgTexture.size().width, y: 0, duration: 9)
-        let replaceBg = SKAction.moveByX(bgTexture.size().width, y: 0, duration: 0)
-        let moveBgForever = SKAction.repeatActionForever(SKAction.sequence([moveBg, replaceBg]))
+        let moveBg = SKAction.moveBy(x: -bgTexture.size().width, y: 0, duration: 9)
+        let replaceBg = SKAction.moveBy(x: bgTexture.size().width, y: 0, duration: 0)
+        let moveBgForever = SKAction.repeatForever(SKAction.sequence([moveBg, replaceBg]))
         
-        for var i: CGFloat = 0; i < 3; i++ {
+        for var i: CGFloat = 0; i < 3; i += 1 {
             
             bg = SKSpriteNode(texture: bgTexture)
-            bg.position     = CGPoint(x: bgTexture.size().width/2 + bgTexture.size().width * i, y: CGRectGetMidY(self.frame))
+            bg.position     = CGPoint(x: bgTexture.size().width/2 + bgTexture.size().width * i, y: self.frame.midY)
             bg.size.height  = self.frame.height
-            bg.runAction(moveBgForever)
+            bg.run(moveBgForever)
             movingObjects.addChild(bg)
             
             
         }
     }
    
-    override func update(currentTime: CFTimeInterval) {
+    override func update(_ currentTime: CFTimeInterval) {
         /* Called before each frame is rendered */
     }
 }
